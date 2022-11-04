@@ -1,6 +1,7 @@
 # Project
 .vscode
 data/
+snippets.py
 
 # MacOS
 .DS_Store
