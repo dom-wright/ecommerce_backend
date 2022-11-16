@@ -1,26 +1,17 @@
-from typing import List, Optional
-from fastapi import FastAPI, status, HTTPException
+from fastapi import APIRouter, status, HTTPException
 from pydantic import BaseModel
-from enum import Enum
+from typing import List, Optional
 
-app = FastAPI()
-
-
-class Tags(Enum):
-    home = "Home"
-    customers = "Customers"
-    products = "Products"
-    orders = "Orders"
-
-
-@app.get("/", tags=[Tags.home], summary="Home Page")
-async def root():
-    return "MY ROOT PAGE"
+router = APIRouter(
+    prefix="/customers",
+    tags=["Customers"],
+    responses={404: {"description": "Not found"}}
+)
 
 
 # defining the customer schema we want to receive.
 class CustomerRequest(BaseModel):
-    customer_name: str
+    name: str
     address: str
     email: str
 
@@ -28,7 +19,7 @@ class CustomerRequest(BaseModel):
 # defining the customer schema we shall return.
 class CustomerResponse(BaseModel):
     id: str
-    customer_name: str
+    name: str
     address: str
     email: str
 
@@ -36,20 +27,20 @@ class CustomerResponse(BaseModel):
 customers_list = [
     {
         "id": "1",
-        "customer_name": "Jane Doe",
+        "name": "Jane Doe",
         "address": "123 Fake Street, Faketown",
         "email": "jane.doe@example.com"
     },
     {
         "id": "2",
-        "customer_name": "Jose Doe",
+        "name": "Jose Doe",
         "address": "321 Calle Falsa, Ciudad de Fako",
         "email": "jose.doe@ejemplo.com"
     }
 ]
 
 
-@app.get("/customers/", status_code=status.HTTP_200_OK, response_model=List[CustomerResponse], tags=[Tags.customers], summary="Get customers", description="Returns a list of customers", response_description="The list of customers.",)
+@router.get("/", status_code=status.HTTP_200_OK, response_model=List[CustomerResponse], summary="Get customers", description="Returns a list of customers", response_description="The list of customers.",)
 async def get_customers(skip: int = 0, limit: int = 10):
     '''
     logic to return customers from database
@@ -57,7 +48,7 @@ async def get_customers(skip: int = 0, limit: int = 10):
     return customers_list
 
 
-@ app.get("/customers/{id}", status_code=status.HTTP_200_OK, response_model=CustomerResponse, tags=[Tags.customers], summary="Gets a customer", description="Gets a customer based on their ID.", response_description="The customer.")
+@router.get("/{id}", status_code=status.HTTP_200_OK, response_model=CustomerResponse, summary="Gets a customer", description="Gets a customer based on their ID.", response_description="The customer.")
 async def get_customer(id: str):
     '''
     logic to find customer in database
@@ -69,12 +60,12 @@ async def get_customer(id: str):
     return customer
 
 
-@ app.post("/customers/create", status_code=status.HTTP_201_CREATED, tags=[Tags.customers], summary="Creates a customer", response_description="The created customer.")
+@router.post("/create", status_code=status.HTTP_201_CREATED, summary="Creates a customer", response_description="The created customer.")
 async def create_customer(customer: CustomerRequest):
     """
     creates a customer using the following information:
 
-    - **customer_name**: required - each customer must have a name
+    - **name**: required - each customer must have a name
     - **address**: required - each customer must have an address to deliver to
     - **email**: required - each customer must have a unique email.
     """
@@ -85,7 +76,7 @@ async def create_customer(customer: CustomerRequest):
     return customer
 
 
-@ app.put("/customers/{id}/update", status_code=status.HTTP_200_OK, tags=[Tags.customers], summary="Updates a customer", response_description="The updated customer.")
+@router.put("/{id}/update", status_code=status.HTTP_200_OK, summary="Updates a customer", response_description="The updated customer.")
 async def update_customer(id: str, customer_changes: dict):
     '''
     logic to update a customer in the database.
@@ -97,7 +88,7 @@ async def update_customer(id: str, customer_changes: dict):
     raise HTTPException(status_code=400, detail="Customer not found.")
 
 
-@ app.delete("/customers/{id}/delete", status_code=status.HTTP_204_NO_CONTENT, tags=[Tags.customers], summary="Deletes a customer", description="Finds and deletes a customer based on their ID.")
+@router.delete("/{id}/delete", status_code=status.HTTP_204_NO_CONTENT, summary="Deletes a customer", description="Finds and deletes a customer based on their ID.")
 async def delete_customer(id: str):
     '''
     logic to find customer record in database and delete it.

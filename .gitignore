@@ -2,6 +2,7 @@
 .vscode
 data/
 snippets.py
+database.py
 
 # MacOS
 .DS_Store
