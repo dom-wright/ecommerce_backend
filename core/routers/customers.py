@@ -1,12 +1,12 @@
 from fastapi import APIRouter, status, HTTPException
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List
 from ..database import database
 
 router = APIRouter(
     prefix="/customers",
     tags=["Customers"],
-    responses={404: {"description": "Not found"}}
+    responses={404: {"description": "Customer not found"}}
 )
 
 
@@ -20,7 +20,7 @@ class CustomerRequest(BaseModel):
 
 # defining the customer schema we shall return.
 class CustomerResponse(BaseModel):
-    id: str
+    id: int
     name: str
     address: str
     city: str
@@ -29,7 +29,7 @@ class CustomerResponse(BaseModel):
 
 @router.get("/", status_code=status.HTTP_200_OK, response_model=List[CustomerResponse], summary="Get customers", description="Returns a list of customers", response_description="The list of customers.",)
 async def get_customers(skip: int = 0, limit: int = 10):
-    query = """SELECT * FROM customers OFFSET :skip LIMIT :limit;"""
+    query = """SELECT * FROM customers ORDER BY name OFFSET :skip LIMIT :limit;"""
     rows = await database.fetch_all(query, {'skip': skip, 'limit': limit})
     return rows
 

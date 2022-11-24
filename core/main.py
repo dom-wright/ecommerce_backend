@@ -1,12 +1,10 @@
-from typing import List, Optional
 from fastapi import FastAPI, status, HTTPException
-from pydantic import BaseModel
 from enum import Enum
-from .routers import customers
+from .routers import customers, products, orders
 from core.database import database
+from fastapi.responses import HTMLResponse
 
 app = FastAPI()
-app.include_router(customers.router)
 
 
 class Tags(Enum):
@@ -14,6 +12,17 @@ class Tags(Enum):
     customers = "Customers"
     products = "Products"
     orders = "Orders"
+
+
+@app.get("/", tags=[Tags.home], summary="Home Page")
+async def root():
+    html = "<h1>MY HOME PAGE</h1>"
+    return HTMLResponse(html)
+
+
+app.include_router(orders.router)
+app.include_router(customers.router)
+app.include_router(products.router)
 
 
 # event handler for the startup of the application
@@ -26,8 +35,3 @@ async def startup():
 @app.on_event("shutdown")
 async def shutdown():
     await database.disconnect()
-
-
-@app.get("/", tags=[Tags.home], summary="Home Page")
-async def root():
-    return "MY ROOT PAGE"

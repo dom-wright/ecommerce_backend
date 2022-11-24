@@ -1,3 +1,4 @@
+-- we are not going to create a categories table. put a check on the product_category column to restrict entries to a set range of categories.
 CREATE TABLE
   IF NOT EXISTS products (
     id integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,

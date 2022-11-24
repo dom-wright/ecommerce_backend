@@ -24,10 +24,11 @@ customers_table = Table(
     Column("id", Integer, primary_key=True),
     Column("name", String(length=100)),
     Column("address", String(length=100)),
+    Column("city", String(length=100)),
     Column("email", String(length=100))
 )
 
-customers_table = Table(
+products_table = Table(
     "products",
     metadata,
     Column("id", Integer, primary_key=True),
@@ -37,7 +38,7 @@ customers_table = Table(
     Column("price", Numeric(precision=10, scale=2))
 )
 
-customers_table = Table(
+orders_table = Table(
     "orders",
     metadata,
     Column("id", Integer, primary_key=True),
