@@ -1,39 +1,22 @@
--- TRIGGER FOR FORCING AUTO UUID ON NEW PRODUCTS.
+-- TRIGGER FOR SETTING UNIT PRICE AT TIME OF ORDER.
 CREATE
-OR REPLACE FUNCTION force_uuid() RETURNS trigger AS $$
-BEGIN NEW.product_sku: = gen_random_uuid();
-RETURN NEW;
-END $$ LANGUAGE plpgsql;
-
-
-CREATE TRIGGER
-  force_uuid BEFORE
-INSERT
-  ON products FOR EACH ROW
-EXECUTE
-  FUNCTION force_uuid();
-
-
--- TRIGGER FOR SETTING UNIT PRICE AT TIME OF ORDER & CALCULATING TOTAL.
-CREATE
-OR REPLACE FUNCTION calculate_total() RETURNS trigger AS $$
+OR REPLACE FUNCTION set_order_unit_price() RETURNS trigger AS $$
 BEGIN
-  NEW.order_price = (
+  NEW.product_unit_price := (
   SELECT
     price
   FROM
     products
   WHERE
-    id = NEW.product_id;
-  )
-  NEW.total_price := NEW.quantity * NEW.order_price
+    id = NEW.product_id
+  );
   RETURN NEW;
 END $$ LANGUAGE plpgsql;
 
 
 CREATE TRIGGER
-  calculate_total BEFORE
+  set_order_unit_price BEFORE
 INSERT
-  ON orders FOR EACH ROW
+  ON order_items FOR EACH ROW
 EXECUTE
-  FUNCTION calculate_total();
+  FUNCTION set_order_unit_price();
