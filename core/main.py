@@ -1,7 +1,12 @@
 from fastapi import FastAPI, status, HTTPException
 from enum import Enum
-from .routers import customers, products, orders
-from core.database import database
+from .routers import (
+    customers,
+    products,
+    orders,
+    admin
+)
+from core.db.database import database
 from fastapi.responses import HTMLResponse
 
 app = FastAPI()
@@ -23,6 +28,7 @@ async def root():
 app.include_router(orders.router)
 app.include_router(customers.router)
 app.include_router(products.router)
+app.include_router(admin.router)
 
 
 # event handler for the startup of the application
