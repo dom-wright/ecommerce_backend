@@ -1,7 +1,7 @@
 from fastapi import APIRouter, status, HTTPException
 from pydantic import BaseModel
 from typing import List
-from ..database import database
+from ..db.database import database
 
 router = APIRouter(
     prefix="/customers",
@@ -14,7 +14,7 @@ router = APIRouter(
 class CustomerRequest(BaseModel):
     name: str
     address: str
-    city: str
+    county: str
     email: str
 
 
@@ -23,7 +23,7 @@ class CustomerResponse(BaseModel):
     id: int
     name: str
     address: str
-    city: str
+    county: str
     email: str
 
 
@@ -46,7 +46,7 @@ async def get_customer(id: int):
 @router.post("/create", status_code=status.HTTP_201_CREATED, summary="Creates a customer", response_description="The created customer.")
 async def create_customer(customer: CustomerRequest):
     customer = customer.dict()
-    create_query = """INSERT INTO customers(name, address, city, email) VALUES (:name, :address, :city, :email);"""
+    create_query = """INSERT INTO customers(name, address, county, email) VALUES (:name, :address, :county, :email);"""
     await database.execute(create_query, customer)
     select_query = "SELECT * FROM customers WHERE email = :email"
     result = await database.fetch_one(select_query, values={"email": customer["email"]})
@@ -60,7 +60,7 @@ async def create_customer(customer: CustomerRequest):
 async def update_customer(id: int, customer: CustomerRequest):
     customer = customer.dict()
     customer['id'] = id
-    update_query = """UPDATE customers SET name = :name, address = :address, city = :city, email = :email WHERE id = :id"""
+    update_query = """UPDATE customers SET name = :name, address = :address, county = :county, email = :email WHERE id = :id"""
     await database.execute(update_query, customer)
     select_query = "SELECT * FROM customers WHERE id = :id"
     result = await database.fetch_one(select_query, values={"id": id})
