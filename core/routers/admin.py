@@ -1,6 +1,6 @@
 from enum import Enum
-from fastapi import APIRouter, status
-from ..db.database import (
+from fastapi import APIRouter, status, HTTPException
+from ..db.data_generation import (
     add_customer,
     add_products,
     add_order

@@ -1,5 +1,4 @@
-from fastapi import FastAPI, status, HTTPException
-from enum import Enum
+from fastapi import FastAPI
 from .routers import (
     customers,
     products,
@@ -12,22 +11,15 @@ from fastapi.responses import HTMLResponse
 app = FastAPI()
 
 
-class Tags(Enum):
-    home = "Home"
-    customers = "Customers"
-    products = "Products"
-    orders = "Orders"
-
-
-@app.get("/", tags=[Tags.home], summary="Home Page")
+@app.get("/", tags=["Home"], summary="Home Page")
 async def root():
     html = "<h1>MY HOME PAGE</h1>"
     return HTMLResponse(html)
 
 
 app.include_router(orders.router)
-app.include_router(customers.router)
 app.include_router(products.router)
+app.include_router(customers.router)
 app.include_router(admin.router)
 
 

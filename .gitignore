@@ -2,6 +2,8 @@
 .vscode
 data/
 snippets.py
+dirs.py
+
 
 # MacOS
 .DS_Store
