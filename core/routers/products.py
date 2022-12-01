@@ -1,12 +1,4 @@
-from enum import Enum
-from fastapi import APIRouter, status, HTTPException
-from pydantic import BaseModel
-from typing import List, Union
-from uuid import UUID
-from ..db.database import (
-    database,
-    products_table as pt
-)
+from typing import Union
 from sqlalchemy import (
     text,
     select,
@@ -14,47 +6,30 @@ from sqlalchemy import (
     update,
     delete
 )
+from fastapi import (
+    APIRouter,
+    Depends,
+    status,
+    HTTPException
+)
+from ..db.database import (
+    database,
+    products_table as pt
+)
+from ..schemas import (
+    ProductRequest,
+    ProductResponse,
+    CategoriesModel,
+    ProductColsModel,
+    ColumnOrderModel
+)
+from .dependencies import return_record_by_id
 
 router = APIRouter(
     prefix="/products",
     tags=["Products"],
     responses={404: {"description": "Product not found"}}
 )
-
-
-# defining the product schema we want to receive.
-class ProductRequest(BaseModel):
-    product_name: str
-    product_category: str
-    price: float
-
-
-# defining the product schema we shall return.
-class ProductResponse(BaseModel):
-    id: int
-    product_sku: UUID
-    product_name: str
-    product_category: str
-    price: str
-
-
-class CategoriesModel(str, Enum):
-    clothing = "clothing"
-    footwear = "footwear"
-    headwear = "headwear"
-    accessories = "accessories"
-
-
-class ProductColsModel(str, Enum):
-    id = 'id'
-    product_name = "product_name"
-    product_category = "product_category"
-    price = "price"
-
-
-class ProductOrderModel(str, Enum):
-    ascending = 'Asc'
-    descending = 'Desc'
 
 
 def product_filter(product_category, order_by, order, limit, skip):
@@ -66,8 +41,8 @@ def product_filter(product_category, order_by, order, limit, skip):
     return query
 
 
-@router.get("/", status_code=status.HTTP_200_OK, response_model=List[ProductResponse], summary="Get products.", description="Returns a list of products. The products can be filtered and sorted as desired.", response_description="The list of products.")
-async def get_products(product_category: Union[CategoriesModel, None] = None, order_by: ProductColsModel = ProductColsModel.id, order: ProductOrderModel = ProductOrderModel.ascending, limit: int = 10, skip: int = 0):
+@router.get("/", status_code=status.HTTP_200_OK, response_model=list[ProductResponse], summary="Get products.", description="Returns a list of products. The products can be filtered and sorted as desired.", response_description="The list of products.")
+async def get_products(product_category: Union[CategoriesModel, None] = None, order_by: ProductColsModel = ProductColsModel.id, order: ColumnOrderModel = ColumnOrderModel.ASC, limit: int = 10, skip: int = 0):
     '''
     Parameters:
     product_category (optional) - allows for filtering by product category.
@@ -76,19 +51,23 @@ async def get_products(product_category: Union[CategoriesModel, None] = None, or
     limit - limits the number of records returned. defaults to 10.
     skip - skips n number of records that would otherwise be returned. allows for pagination.
     '''
-    query = product_filter(product_category, order_by, order, limit, skip)
+    query = product_filter(product_category, order_by, order.name, limit, skip)
     results = await database.fetch_all(query)
     return results
 
 
 @router.get("/{id}", status_code=status.HTTP_200_OK, response_model=ProductResponse, summary="Gets a product.", description="Gets a product based on its ID.", response_description="The product.")
-async def get_product(id: int):
-    select_query = select(pt).where(pt.c.id == id)
-    result = await database.fetch_one(select_query)
-    if not result:
-        raise HTTPException(
-            status_code=404, detail=f"Customer with ID = {id} not found.")
-    return result
+async def get_product_by_id(product: ProductResponse = Depends(return_record_by_id)):
+    return product
+
+# @router.get("/{id}", status_code=status.HTTP_200_OK, response_model=ProductResponse, summary="Gets a product.", description="Gets a product based on its ID.", response_description="The product.")
+# async def get_product(id: int):
+#     select_query = select(pt).where(pt.c.id == id)
+#     result = await database.fetch_one(select_query)
+#     if not result:
+#         raise HTTPException(
+#             status_code=404, detail=f"Customer with ID = {id} not found.")
+#     return result
 
 
 @router.post("/create", status_code=status.HTTP_201_CREATED, response_model=ProductResponse, summary="Creates a product", response_description="The created product.")

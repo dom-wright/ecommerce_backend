@@ -1,7 +1,9 @@
 from fastapi import APIRouter, status, HTTPException
-from pydantic import BaseModel
-from typing import List
 from ..db.database import database
+from ..schemas import (
+    CustomerRequest,
+    CustomerResponse
+)
 
 router = APIRouter(
     prefix="/customers",
@@ -10,27 +12,10 @@ router = APIRouter(
 )
 
 
-# defining the customer schema we want to receive.
-class CustomerRequest(BaseModel):
-    name: str
-    address: str
-    county: str
-    email: str
-
-
-# defining the customer schema we shall return.
-class CustomerResponse(BaseModel):
-    id: int
-    name: str
-    address: str
-    county: str
-    email: str
-
-
-@router.get("/", status_code=status.HTTP_200_OK, response_model=List[CustomerResponse], summary="Get customers", description="Returns a list of customers", response_description="The list of customers.",)
+@router.get("/", status_code=status.HTTP_200_OK, response_model=list[CustomerResponse], summary="Get customers", description="Returns a list of customers", response_description="The list of customers.",)
 async def get_customers(skip: int = 0, limit: int = 10):
-    query = """SELECT * FROM customers ORDER BY name OFFSET :skip LIMIT :limit;"""
-    rows = await database.fetch_all(query, {'skip': skip, 'limit': limit})
+    select_query = f"""SELECT * FROM customers OFFSET :skip LIMIT :limit;"""
+    rows = await database.fetch_all(select_query, {'skip': skip, 'limit': limit})
     return rows
 
 

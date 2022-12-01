@@ -1,6 +1,5 @@
 from fastapi import APIRouter, status, HTTPException
 from pydantic import BaseModel
-from typing import List, Optional
 from datetime import datetime, date
 from ..db.database import database
 
@@ -34,7 +33,7 @@ class OrderResponse(BaseModel):
     ship_date: date
 
 
-@router.get("/", status_code=status.HTTP_200_OK, response_model=List[OrderResponse], summary="Get orders.", description="Returns a list of orders.", response_description="The list of orders.",)
+@router.get("/", status_code=status.HTTP_200_OK, response_model=list[OrderResponse], summary="Get orders.", description="Returns a list of orders.", response_description="The list of orders.",)
 async def get_orders(skip: int = 0, limit: int = 10):
     return None
 
