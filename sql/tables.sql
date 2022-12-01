@@ -24,6 +24,7 @@ CREATE TABLE
     customer_id integer REFERENCES customers(id),
     -- total_price money NOT NULL CHECK(total_price :: numeric > 0),
     order_date timestamp DEFAULT NOW(),
+    order_status varchar(100),
     ship_date date
   );
 
