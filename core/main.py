@@ -1,12 +1,10 @@
 from fastapi import FastAPI
-from .routers import (
-    customers,
-    products,
-    orders,
-    admin
-)
-from core.db.database import database
 from fastapi.responses import HTMLResponse
+from core.db.database import database
+from .products import products
+from .orders import orders
+from .customers import customers, admin
+
 
 app = FastAPI()
 

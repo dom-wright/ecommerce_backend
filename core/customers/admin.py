@@ -1,21 +1,16 @@
 from enum import Enum
-from fastapi import APIRouter, status, HTTPException
+from fastapi import APIRouter, status
 from ..db.data_generation import (
     add_customer,
     add_products,
     add_order
 )
+from .schemas import TablesModel
 
 router = APIRouter(
     prefix="/admin",
     tags=["Admin"],
 )
-
-
-class TablesModel(str, Enum):
-    customer = "customer"
-    product = "product"
-    order = "order"
 
 
 @router.post("/create/", status_code=status.HTTP_201_CREATED, response_model=str, summary="Create new records.", description="Create new records for the tables.")

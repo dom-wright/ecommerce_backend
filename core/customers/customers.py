@@ -1,6 +1,6 @@
 from fastapi import APIRouter, status, HTTPException
 from ..db.database import database
-from ..schemas import (
+from .schemas import (
     CustomerRequest,
     CustomerResponse
 )
