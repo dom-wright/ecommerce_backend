@@ -32,7 +32,20 @@ async def add_customer(n):
             await database.execute(query)
         except Exception as e:
             raise HTTPException(
-                status_code=500, detail=str(e))
+                status_code=500, detail=str(e)
+            )
+
+
+def _generate_customer():
+    first_name = fake.first_name()
+    last_name = fake.last_name()
+    name = f'{first_name} {last_name}'
+    raw_address = fake.address()
+    address = raw_address.replace('\n', ', ').rsplit(', ', 1)[0]
+    county = random.choices(counties, weights=(
+        30, 10, 10, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5))[0]
+    email = f'{first_name}.{last_name}@{fake.domain_name()}'
+    return name, address, county, email
 
 
 async def add_products(n):
@@ -49,26 +62,31 @@ async def add_products(n):
         await database.execute(query)
     except Exception as e:
         raise HTTPException(
-            status_code=500, detail=str(e))
+            status_code=500, detail=str(e)
+        )
 
 
 async def add_order(n):
-    customer_ids = await _get_customer_ids()
-    product_ids = await _get_product_ids()
+    customer_ids = await _get_table_ids(customers_table)
+    product_ids = await _get_table_ids(products_table)
     for _ in range(n):
         customer_id = random.choice(customer_ids)
         order_date, ship_date = _generate_order_dates()
+        order_status = None
+        if ship_date:
+            order_status = 'Delivered'
         query = insert(orders_table).values(
-            customer_id=customer_id, order_date=order_date, ship_date=ship_date).returning('*')
+            customer_id=customer_id, order_date=order_date, ship_date=ship_date, order_status=order_status).returning('*')
         try:
             order_id = await database.execute(query)
-            await add_order_items(order_id, product_ids)
+            await _add_order_items(order_id, product_ids)
         except Exception as e:
             raise HTTPException(
-                status_code=500, detail=str(e))
+                status_code=500, detail=str(e)
+            )
 
 
-async def add_order_items(order_id, product_ids):
+async def _add_order_items(order_id, product_ids):
     for _ in range(1, random.randint(2, 4)):
         product_id = random.choice(product_ids)
         quantity = random.choices([1, 2, 3, 4], weights=[60, 25, 10, 5])[0]
@@ -78,33 +96,8 @@ async def add_order_items(order_id, product_ids):
             await database.execute(insert_query)
         except Exception as e:
             raise HTTPException(
-                status_code=500, detail=str(e))
-
-
-async def _get_customer_ids():
-    customer_query = select(customers_table.c.id)
-    customer_results = await database.fetch_all(customer_query)
-    customer_ids = [row[0] for row in customer_results]
-    return customer_ids
-
-
-async def _get_product_ids():
-    product_query = select(products_table.c.id)
-    product_results = await database.fetch_all(product_query)
-    product_ids = [row[0] for row in product_results]
-    return product_ids
-
-
-def _generate_customer():
-    first_name = fake.first_name()
-    last_name = fake.last_name()
-    name = f'{first_name} {last_name}'
-    raw_address = fake.address()
-    address = raw_address.replace('\n', ', ').rsplit(', ', 1)[0]
-    county = random.choices(counties, weights=(
-        30, 10, 10, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5))[0]
-    email = f'{first_name}.{last_name}@{fake.domain_name()}'
-    return name, address, county, email
+                status_code=500, detail=str(e)
+            )
 
 
 def _generate_order_dates():
@@ -119,3 +112,10 @@ def _generate_order_dates():
         ship_datetime = order_date + days_to_delivery
         ship_date = ship_datetime.date()
     return order_date, ship_date
+
+
+async def _get_table_ids(table):
+    query = select(table.c.id)
+    rows = await database.fetch_all(query)
+    ids = [row.id for row in rows]
+    return ids

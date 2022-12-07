@@ -32,18 +32,18 @@ router = APIRouter(
 
 
 @router.get("/", status_code=status.HTTP_200_OK, response_model=list[OrderResponse], summary="Get orders.", description="Returns a list of orders.", response_description="The list of orders.",)
-async def orders(orders: list[OrderResponse] = Depends(get_orders)):
+async def orders(orders: get_orders = Depends()):
     return orders
 
 
 @router.get("/customer/{id}", status_code=status.HTTP_200_OK, response_model=OrdersByCustomerResponse, summary="Get orders.", description="Returns a list of orders.", response_description="The list of orders.",)
-async def orders_by_customer(id: int, orders: list[OrdersByCustomerResponse] = Depends(get_orders_by_customer)):
+async def orders_by_customer(id: int, orders: get_orders_by_customer = Depends()):
     customer = await customer_by_id(id)
     return {"customer": customer, "orders": orders}
 
 
 @router.get("/{id}", status_code=status.HTTP_200_OK, response_model=OrderWithItemsResponse | OrderResponse, summary="Gets a order based on its ID.", description="Gets the order using the order ID. Option to include full details, including customer, items & products.", response_description="The order.")
-async def order_by_id(order: Mapping = Depends(get_order_by_id_with_items)):
+async def order_by_id(order: get_order_by_id_with_items = Depends()):
     return order
 
 
@@ -55,7 +55,7 @@ async def create_order(customer_id: int, orderItems: list[OrderItemsRequest]):
 
 
 @router.put("/{id}/update", status_code=status.HTTP_200_OK, response_model=OrderResponse, summary="Updates a order.", response_description="The updated order.")
-async def update_product(new_values: OrderRequest, order: int = Depends(get_order_by_id)):
+async def update_product(new_values: OrderRequest, order: get_order_by_id = Depends()):
     new_values_dict = new_values.dict()
     amended_order = await update_record(ot, order, new_values_dict)
     return amended_order

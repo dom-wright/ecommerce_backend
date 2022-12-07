@@ -18,7 +18,7 @@ router = APIRouter(
 
 
 @router.get("/", status_code=status.HTTP_200_OK, response_model=list[ProductResponse], summary="Get products.", description="Returns a list of products. The products can be filtered and sorted as desired.", response_description="The list of products.")
-async def get_products(product: list[ProductResponse] = Depends(product_filter)):
+async def get_products(product: product_filter = Depends()):
     '''
     Parameters:
     product_category (optional) - allows for filtering by product category.
@@ -31,7 +31,7 @@ async def get_products(product: list[ProductResponse] = Depends(product_filter))
 
 
 @router.get("/{id}", status_code=status.HTTP_200_OK, response_model=ProductResponse, summary="Gets a product.", description="Gets a product based on its ID.", response_description="The product.")
-async def get_product_by_id(product: ProductResponse = Depends(product_by_id)):
+async def get_product_by_id(product: product_by_id = Depends()):
     return product
 
 
@@ -45,7 +45,7 @@ async def create_product(product: ProductRequest):
 async def update_product(
     new_values: dict = Body(
         default={}, example='{"product_name": "Trousers", "product_category": "Clothing", "price": 39.99}'),
-    product: ProductResponse = Depends(product_by_id)
+    product: product_by_id = Depends()
 ):
     amended_product = await update_record(pt, product, new_values)
     return amended_product

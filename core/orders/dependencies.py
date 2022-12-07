@@ -1,4 +1,4 @@
-from fastapi import HTTPException, Query
+from fastapi import HTTPException, Query, Depends
 from sqlalchemy import (
     select,
     text,
@@ -57,12 +57,10 @@ async def get_order_by_id(id: int):
     return order
 
 
-async def get_order_by_id_with_items(id: int, with_items: bool = False):
-    order = await get_order_by_id(id)
+async def get_order_by_id_with_items(order: get_order_by_id = Depends(), with_items: bool = False):
     if with_items:
         order = await _get_order_with_items(order)
-    return 10
-    # return order
+    return order
 
 
 async def _get_order_with_items(order: OrderResponse):
