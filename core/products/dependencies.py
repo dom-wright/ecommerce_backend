@@ -1,4 +1,3 @@
-from typing import Union
 from fastapi import HTTPException
 from sqlalchemy import (
     select,
@@ -12,7 +11,7 @@ from .schemas import (
     ProductCategoriesModel,
     ProductColsModel
 )
-from ..schemas import ColumnOrderModel
+from ..enums import ColumnOrderModel
 
 
 async def product_by_id(id: int):
@@ -24,7 +23,7 @@ async def product_by_id(id: int):
     return record
 
 
-async def product_filter(product_category: Union[ProductCategoriesModel, None] = None, order_by: ProductColsModel = ProductColsModel.id, order: ColumnOrderModel = ColumnOrderModel.ASC, limit: int = 10, skip: int = 0):
+async def product_filter(product_category: ProductCategoriesModel | None = None, order_by: ProductColsModel = ProductColsModel.id, order: ColumnOrderModel = ColumnOrderModel.ASC, limit: int = 10, skip: int = 0):
     query = select(pt)
     if product_category:
         query = query.where(pt.c.product_category == product_category)

@@ -1,23 +1,13 @@
-from typing import Mapping
-from sqlalchemy import (
-    insert,
-    update,
-    delete
-)
+from sqlalchemy import delete
 from fastapi import (
     APIRouter,
     Depends,
     status,
-    HTTPException
+    Body
 )
-from ..db.database import (
-    database,
-    products_table as pt
-)
-from .schemas import (
-    ProductRequest,
-    ProductResponse
-)
+from ..db.database import database, products_table as pt
+from .schemas import ProductRequest, ProductResponse
+from ..dependencies import create_record, update_record
 from .dependencies import product_by_id, product_filter
 
 router = APIRouter(
@@ -28,7 +18,7 @@ router = APIRouter(
 
 
 @router.get("/", status_code=status.HTTP_200_OK, response_model=list[ProductResponse], summary="Get products.", description="Returns a list of products. The products can be filtered and sorted as desired.", response_description="The list of products.")
-async def get_products(product: Mapping = Depends(product_filter)):
+async def get_products(product: list[ProductResponse] = Depends(product_filter)):
     '''
     Parameters:
     product_category (optional) - allows for filtering by product category.
@@ -41,28 +31,24 @@ async def get_products(product: Mapping = Depends(product_filter)):
 
 
 @router.get("/{id}", status_code=status.HTTP_200_OK, response_model=ProductResponse, summary="Gets a product.", description="Gets a product based on its ID.", response_description="The product.")
-async def get_product_by_id(product: int = Depends(product_by_id)):
+async def get_product_by_id(product: ProductResponse = Depends(product_by_id)):
     return product
 
 
 @router.post("/create", status_code=status.HTTP_201_CREATED, response_model=ProductResponse, summary="Creates a product", response_description="The created product.")
 async def create_product(product: ProductRequest):
-    product_items = product.dict()
-    query = insert(pt).values(product_items).returning('*')
-    new_product = await database.fetch_one(query)
-    if not new_product:
-        raise HTTPException(
-            status_code=404, detail="Insertion failed.")
-    return new_product._mapping
+    new_product = await create_record(pt, product)
+    return new_product
 
 
 @router.put("/{id}/update", status_code=status.HTTP_200_OK, response_model=ProductResponse, summary="Updates a product.", response_description="The updated product.")
-async def update_product(new_product: ProductRequest, product: int = Depends(product_by_id)):
-    values = new_product.dict()
-    update_query = update(pt).where(pt.c.id == product.id).values(
-        **values).returning("*")
-    amended_product = await database.fetch_one(update_query)
-    return amended_product._mapping
+async def update_product(
+    new_values: dict = Body(
+        default={}, example='{"product_name": "Trousers", "product_category": "Clothing", "price": 39.99}'),
+    product: ProductResponse = Depends(product_by_id)
+):
+    amended_product = await update_record(pt, product, new_values)
+    return amended_product
 
 
 @router.delete("/{id}/delete", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(product_by_id)], summary="Deletes a product from catelog", description="Finds and deletes a product based on its ID.")

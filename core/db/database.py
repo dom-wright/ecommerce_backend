@@ -45,7 +45,8 @@ orders_table = Table(
     Column("customer_id", Integer, ForeignKey(
         "customers.id")),
     Column("order_date", DateTime),
-    Column("ship_date", Date)
+    Column("ship_date", Date),
+    Column("order_status", String(length=100))
 )
 
 order_items_table = Table(

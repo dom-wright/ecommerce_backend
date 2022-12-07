@@ -14,7 +14,7 @@ class CustomerRequest(BaseModel):
             "example": {
                 "name": "Jane Doe",
                 "address": "123 Fake Street",
-                "city": "Faketown",
+                "county": "Faketown",
                 "email": "jane.doe@example.com"
             }
         }
@@ -26,7 +26,7 @@ class CustomerResponse(BaseModel):
     name: str
     address: str
     county: str
-    email: EmailStr
+    email: str
 
     class Config:
         schema_extra = {
@@ -34,7 +34,7 @@ class CustomerResponse(BaseModel):
                 "id": 34,
                 "name": "Jane Doe",
                 "address": "123 Fake Street",
-                "city": "Faketown",
+                "county": "Fakeshire",
                 "email": "jane.doe@example.com"
             }
         }

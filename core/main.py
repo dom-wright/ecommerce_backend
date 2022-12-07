@@ -1,9 +1,9 @@
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
-from core.db.database import database
-from .products import products
-from .orders import orders
+from .db.database import database
 from .customers import customers, admin
+from .orders import orders
+from .products import products
 
 
 app = FastAPI()

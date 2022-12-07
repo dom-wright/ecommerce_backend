@@ -21,11 +21,18 @@ CREATE TABLE
 CREATE TABLE
   IF NOT EXISTS orders (
     id integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    customer_id integer REFERENCES customers(id),
-    -- total_price money NOT NULL CHECK(total_price :: numeric > 0),
-    order_date timestamp DEFAULT NOW(),
-    order_status varchar(100) NOT NULL DEFAULT 'Pending',
-    ship_date date
+    customer_id integer REFERENCES customers(id) NOT NULL,
+    order_date timestamp NOT NULL DEFAULT NOW(),
+    order_status varchar(100) NOT NULL CHECK(
+      order_status in (
+        'Pending',
+        'Accepted',
+        'Cancelled',
+        'Dispatched',
+        'Delivered'
+      )
+    ) DEFAULT 'Pending',
+    ship_date date CHECK(order_status = 'Delivered')
   );
 
 
