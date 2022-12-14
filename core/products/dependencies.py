@@ -19,7 +19,7 @@ async def product_by_id(id: int):
     record = await database.fetch_one(query)
     if not record:
         raise HTTPException(
-            status_code=404, detail=f"Customer with ID = {id} not found.")
+            status_code=404, detail=f"User with ID = {id} not found.")
     return record
 
 

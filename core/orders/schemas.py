@@ -1,11 +1,11 @@
 from datetime import datetime, date
 from pydantic import BaseModel, validator, Field
-from ..customers.schemas import CustomerResponse
+from ..auth.schemas import UserResponse
 from ..products.schemas import ProductResponse
 from .enums import OrderStatusModel
 
 
-class OrderRequest(BaseModel):
+class OrderUpdateRequest(BaseModel):
     ship_date: date | None = None
     order_status: OrderStatusModel
 
@@ -45,7 +45,7 @@ class OrderItemsRequest(BaseModel):
 
 class OrderResponse(BaseModel):
     id: int
-    customer_id: int
+    user_id: int
     order_date: datetime
     ship_date: date | None
     order_status: str
@@ -54,10 +54,10 @@ class OrderResponse(BaseModel):
         schema_extra = {
             "example": {
                 "id": 12,
-                "customer_id": 34,
+                "user_id": 34,
                 "order_date": "2022-08-27 15:43:01.843467",
-                "ship_date": "2022-08-30",
-                "order_status": "Delivered"
+                "order_status": "Delivered",
+                "ship_date": "2022-08-30"
             }
         }
 
@@ -88,26 +88,28 @@ class OrderItemsResponse(BaseModel):
 
 
 class OrderWithItemsResponse(BaseModel):
-    customer: CustomerResponse
+    user: UserResponse
     order: OrderResponse
     order_items: list[OrderItemsResponse]
 
     class Config:
         schema_extra = {
             "example": {
+                "user": {
+                    "id": 34,
+                    "username": "jane_doe",
+                    "full_name": "Jane Doe",
+                    "email": "jane.doe@example.com",
+                    "date_joined": "2022-08-27 15:43:01.843467",
+                    "address": "123 Fake Street",
+                    "county": "Fakeshire"
+                },
                 "order": {
                     "id": 12,
-                    "customer_id": 34,
+                    "user_id": 34,
                     "order_date": "2022-08-27 15:43:01.843467",
                     "ship_date": "2022-08-30",
                     "order_status": "Delivered"
-                },
-                "customer": {
-                    "id": 34,
-                    "name": "Jane Doe",
-                    "address": "123 Fake Street",
-                    "county": "Fakeshire",
-                    "email": "jane.doe@example.com"
                 },
                 "order_items": [
                     {
@@ -140,31 +142,33 @@ class OrderWithItemsResponse(BaseModel):
         }
 
 
-class OrdersByCustomerResponse(BaseModel):
-    customer: CustomerResponse
+class OrdersByUserResponse(BaseModel):
+    user: UserResponse
     orders: list[OrderResponse]
 
     class Config:
         schema_extra = {
             "example": {
-                "customer": {
+                "user": {
                     "id": 34,
-                    "name": "Jane Doe",
+                    "username": "jane_doe",
+                    "full_name": "Jane Doe",
+                    "email": "jane.doe@example.com",
+                    "date_joined": "2022-08-27 15:43:01.843467",
                     "address": "123 Fake Street",
-                    "county": "Fakeshire",
-                    "email": "jane.doe@example.com"
+                    "county": "Fakeshire"
                 },
                 "orders": [
                     {
                         "id": 12,
-                        "customer_id": 34,
+                        "user_id": 34,
                         "order_date": "2022-08-27 15:43:01.843467",
                         "ship_date": "2022-08-30",
                         "order_status": "Delivered"
                     },
                     {
                         "id": 17,
-                        "customer_id": 34,
+                        "user_id": 34,
                         "order_date": "2022-10-13T17:52:59.895709",
                         "ship_date": "2022-10-16",
                         "order_status": "Pending"

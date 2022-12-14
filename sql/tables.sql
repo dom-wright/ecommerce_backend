@@ -9,30 +9,38 @@ CREATE TABLE
 
 
 CREATE TABLE
-  IF NOT EXISTS customers (
+  IF NOT EXISTS users (
     id integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    customer_name varchar(100) NOT NULL,
+    username varchar(100) NOT NULL,
+    hashed_password varchar(100) NOT NULL,
+    full_name varchar(100) NOT NULL,
+    email varchar(100) NOT NULL UNIQUE,
+    is_superuser boolean NOT NULL DEFAULT 'f',
+    is_staff boolean NOT NULL DEFAULT 'f',
+    is_active boolean NOT NULL DEFAULT 't',
+    date_joined timestamp NOT NULL DEFAULT NOW(),
     address varchar(100) NOT NULL,
-    county varchar(100) NOT NULL,
-    email varchar(100) NOT NULL UNIQUE
+    county varchar(100) NOT NULL
   );
 
 
 CREATE TABLE
   IF NOT EXISTS orders (
     id integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    customer_id integer REFERENCES customers(id) NOT NULL,
-    order_date timestamp NOT NULL DEFAULT NOW(),
-    order_status varchar(100) NOT NULL CHECK(
-      order_status in (
-        'Pending',
-        'Accepted',
-        'Cancelled',
-        'Dispatched',
-        'Delivered'
-      )
-    ) DEFAULT 'Pending',
-    ship_date date CHECK(order_status = 'Delivered')
+    user_id integer REFERENCES users(id) ON DELETE
+    SET
+      NULL,
+      order_date timestamp NOT NULL DEFAULT NOW(),
+      order_status varchar(100) NOT NULL CHECK(
+        order_status in (
+          'Pending',
+          'Accepted',
+          'Cancelled',
+          'Dispatched',
+          'Delivered'
+        )
+      ) DEFAULT 'Pending',
+      ship_date date
   );
 
 

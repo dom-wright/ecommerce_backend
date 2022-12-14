@@ -1,7 +1,8 @@
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from .db.database import database
-from .customers import customers, admin
+from .auth import admin, auth
+from .users import users
 from .orders import orders
 from .products import products
 
@@ -15,9 +16,10 @@ async def root():
     return HTMLResponse(html)
 
 
+app.include_router(auth.router)
 app.include_router(orders.router)
 app.include_router(products.router)
-app.include_router(customers.router)
+app.include_router(users.router)
 app.include_router(admin.router)
 
 

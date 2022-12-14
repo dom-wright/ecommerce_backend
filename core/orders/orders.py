@@ -1,4 +1,3 @@
-from typing import Mapping
 from fastapi import (
     APIRouter,
     Depends,
@@ -8,20 +7,20 @@ from fastapi import (
 from sqlalchemy import delete
 from ..db.database import database, orders_table as ot
 from .schemas import (
-    OrderRequest,
+    OrderUpdateRequest,
     OrderItemsRequest,
     OrderResponse,
     OrderWithItemsResponse,
-    OrdersByCustomerResponse
+    OrdersByUserResponse
 )
-from ..customers.dependencies import customer_by_id
+from ..auth.dependencies import user_by_id
 from ..dependencies import update_record
 from .dependencies import (
     get_orders,
     get_order_by_id,
     get_order_by_id_with_items,
     create_new_order,
-    get_orders_by_customer
+    get_orders_by_user
 )
 
 router = APIRouter(
@@ -36,26 +35,26 @@ async def orders(orders: get_orders = Depends()):
     return orders
 
 
-@router.get("/customer/{id}", status_code=status.HTTP_200_OK, response_model=OrdersByCustomerResponse, summary="Get orders.", description="Returns a list of orders.", response_description="The list of orders.",)
-async def orders_by_customer(id: int, orders: get_orders_by_customer = Depends()):
-    customer = await customer_by_id(id)
-    return {"customer": customer, "orders": orders}
+@router.get("/user/{id}", status_code=status.HTTP_200_OK, response_model=OrdersByUserResponse, summary="Get orders.", description="Returns a list of orders.", response_description="The list of orders.",)
+async def orders_by_user(id: int, orders: get_orders_by_user = Depends()):
+    user = await user_by_id(id)
+    return {"user": user, "orders": orders}
 
 
-@router.get("/{id}", status_code=status.HTTP_200_OK, response_model=OrderWithItemsResponse | OrderResponse, summary="Gets a order based on its ID.", description="Gets the order using the order ID. Option to include full details, including customer, items & products.", response_description="The order.")
+@router.get("/{id}", status_code=status.HTTP_200_OK, response_model=OrderWithItemsResponse | OrderResponse, summary="Gets a order based on its ID.", description="Gets the order using the order ID. Option to include full details, including user, items & products.", response_description="The order.")
 async def order_by_id(order: get_order_by_id_with_items = Depends()):
     return order
 
 
 @router.post("/create", status_code=status.HTTP_201_CREATED, response_model=OrderWithItemsResponse, summary="Creates a new order", response_description="The created order.")
-async def create_order(customer_id: int, orderItems: list[OrderItemsRequest]):
-    new_order = await create_new_order(customer_id, orderItems)
+async def create_order(user_id: int, orderItems: list[OrderItemsRequest]):
+    new_order = await create_new_order(user_id, orderItems)
     full_order = await get_order_by_id_with_items(new_order.id, with_items=True)
     return full_order
 
 
 @router.put("/{id}/update", status_code=status.HTTP_200_OK, response_model=OrderResponse, summary="Updates a order.", response_description="The updated order.")
-async def update_product(new_values: OrderRequest, order: get_order_by_id = Depends()):
+async def update_product(new_values: OrderUpdateRequest, order: get_order_by_id = Depends()):
     new_values_dict = new_values.dict()
     amended_order = await update_record(ot, order, new_values_dict)
     return amended_order

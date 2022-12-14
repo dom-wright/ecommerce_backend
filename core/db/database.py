@@ -8,7 +8,8 @@ from sqlalchemy import (
     Integer,
     DateTime,
     Date,
-    Numeric
+    Numeric,
+    Boolean
 )
 
 
@@ -18,14 +19,20 @@ database = Database(DATABASE_URL)
 
 metadata = MetaData()
 
-customers_table = Table(
-    "customers",
+users_table = Table(
+    "users",
     metadata,
     Column("id", Integer, primary_key=True),
-    Column("name", String(length=100)),
+    Column("username", String(length=100)),
+    Column("hashed_password", String(length=100)),
+    Column("full_name", String(length=100)),
+    Column("email", String(length=100)),
+    Column("is_superuser", Boolean),
+    Column("is_staff", Boolean),
+    Column("is_active", Boolean),
+    Column("date_joined", DateTime),
     Column("address", String(length=100)),
-    Column("county", String(length=100)),
-    Column("email", String(length=100))
+    Column("county", String(length=100))
 )
 
 products_table = Table(
@@ -42,8 +49,8 @@ orders_table = Table(
     "orders",
     metadata,
     Column("id", Integer, primary_key=True),
-    Column("customer_id", Integer, ForeignKey(
-        "customers.id")),
+    Column("user_id", Integer, ForeignKey(
+        "users.id")),
     Column("order_date", DateTime),
     Column("ship_date", Date),
     Column("order_status", String(length=100))

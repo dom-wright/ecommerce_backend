@@ -34,7 +34,7 @@ class ProductResponse(BaseModel):
                 "product_sku": "4e7dd739-f000-4840-9740-b427c52d5c69",
                 "product_name": "Dress",
                 "product_category": "Clothing",
-                "price": 119.99
+                "price": "$119.99"
             }
         }
 

@@ -6,9 +6,9 @@ from sqlalchemy import (
 )
 from ..db.database import (
     database,
+    users_table as ut,
     orders_table as ot,
     order_items_table as oi,
-    customers_table as ct,
     products_table as pt
 )
 from .schemas import (
@@ -17,7 +17,7 @@ from .schemas import (
     OrderItemsResponse
 )
 from .enums import OrderColsModel, OrderStatusModel
-from ..customers.dependencies import customer_by_id
+from ..auth.dependencies import user_by_id
 from ..products.dependencies import product_by_id
 from ..enums import ColumnOrderModel
 
@@ -26,29 +26,29 @@ from ..enums import ColumnOrderModel
 
 
 async def get_orders(status: OrderStatusModel | None = None, county: str | None = Query(default=None, title="Filter by region.", description="Choose a region (County) of the UK e.g. 'Cornwall', 'West Lothian'."), order_by: OrderColsModel = OrderColsModel.order_date, order: ColumnOrderModel = ColumnOrderModel.DESC, limit: int = 10, skip: int = 0):
-    query = select(ot).join_from(ot, ct)
+    query = select(ot).join_from(ot, ut)
     if status:
         query = query.where(ot.c.order_status == status)
     if county:
-        query = query.where(ct.c.county == county)
+        query = query.where(ut.c.county == county)
     query = query.order_by(
         text(f'{order_by} {order.name}')).limit(limit).offset(skip)
     orders = await database.fetch_all(query)
     return orders
 
 
-async def get_orders_by_customer(id: int):
-    query = select(ot).where(ot.c.customer_id == id)
+async def get_orders_by_user(id: int):
+    query = select(ot).where(ot.c.user_id == id)
     orders = await database.fetch_all(query)
     if not orders:
         raise HTTPException(
-            status_code=404, detail=f"Orders for customer with ID = {id} not found."
+            status_code=404, detail=f"Orders for user with ID = {id} not found."
         )
     return orders
 
 
-async def get_order_by_id(id: int):
-    query = select(ot).where(ot.c.id == id)
+async def get_order_by_id(order_id: int):
+    query = select(ot).where(ot.c.id == order_id)
     order = await database.fetch_one(query)
     if not order:
         raise HTTPException(
@@ -57,19 +57,20 @@ async def get_order_by_id(id: int):
     return order
 
 
-async def get_order_by_id_with_items(order: get_order_by_id = Depends(), with_items: bool = False):
+async def get_order_by_id_with_items(order_id: int, with_items: bool = False):
+    order = await get_order_by_id(order_id)
     if with_items:
         order = await _get_order_with_items(order)
     return order
 
 
 async def _get_order_with_items(order: OrderResponse):
-    customer = await customer_by_id(order['customer_id'])
+    user = await user_by_id(order['user_id'])
     order_items_query = select(oi).where(oi.c.order_id == order["id"])
     order_items = await database.fetch_all(order_items_query)
     order_items_with_products = await _get_items_with_product(order_items)
     full_order = {
-        "customer": customer,
+        "user": user,
         "order": order,
         "order_items": order_items_with_products
     }
@@ -89,9 +90,9 @@ async def _get_items_with_product(order_items: list[OrderItemsResponse]):
 '''CREATE / UPDATE'''
 
 
-async def create_new_order(customer_id: int, orderItems: OrderItemsRequest):
+async def create_new_order(user_id: int, orderItems: list[OrderItemsRequest]):
     insert_order_query = insert(ot).values(
-        customer_id=customer_id).returning('*')
+        user_id=user_id).returning('*')
     order = await database.fetch_one(insert_order_query)
     if not order:
         raise HTTPException(

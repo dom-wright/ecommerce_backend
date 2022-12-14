@@ -11,7 +11,7 @@ class OrderStatusModel(str, Enum):
 
 class OrderColsModel(str, Enum):
     id = "id"
-    customer_id = "customer_id"
+    user_id = "user_id"
     order_date = "order_date"
     order_status = "order_status"
     ship_date = "ship_date"

@@ -4,14 +4,14 @@ import random
 from faker import Faker
 from fastapi import HTTPException
 from sqlalchemy import select, insert
+from ..auth.utils import get_password_hash
 from .database import (
     database,
-    customers_table,
+    users_table,
     products_table,
     orders_table,
     order_items_table
 )
-
 
 counties = [
     'Greater London', 'Strathclyde', 'West Lothian', 'North Yorkshire', 'Surrey',
@@ -23,11 +23,10 @@ days = [1, 2, 3, 4, 5, 6, 7]
 fake = Faker(locale='en_GB')
 
 
-async def add_customer(n):
+async def add_user(n):
     for _ in range(n):
-        name, address, county, email = _generate_customer()
-        query = insert(customers_table).values(
-            name=name, address=address, county=county, email=email)
+        user_values = _generate_user()
+        query = insert(users_table).values(**user_values)
         try:
             await database.execute(query)
         except Exception as e:
@@ -36,16 +35,21 @@ async def add_customer(n):
             )
 
 
-def _generate_customer():
+def _generate_user():
     first_name = fake.first_name()
     last_name = fake.last_name()
-    name = f'{first_name} {last_name}'
+    full_name = f'{first_name} {last_name}'
+    username = f'{first_name}_{last_name}'.lower()
+    email = f'{first_name}.{last_name}@{fake.domain_name()}'.lower()
+    password = 'password'
+    hashed_password = get_password_hash(password)
     raw_address = fake.address()
     address = raw_address.replace('\n', ', ').rsplit(', ', 1)[0]
     county = random.choices(counties, weights=(
         30, 10, 10, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5))[0]
-    email = f'{first_name}.{last_name}@{fake.domain_name()}'
-    return name, address, county, email
+    user = {'username': username, 'hashed_password': hashed_password, 'full_name': full_name,
+            'email': email, 'address': address, 'county': county}
+    return user
 
 
 async def add_products(n):
@@ -67,16 +71,16 @@ async def add_products(n):
 
 
 async def add_order(n):
-    customer_ids = await _get_table_ids(customers_table)
+    user_ids = await _get_table_ids(users_table)
     product_ids = await _get_table_ids(products_table)
     for _ in range(n):
-        customer_id = random.choice(customer_ids)
+        user_id = random.choice(user_ids)
         order_date, ship_date = _generate_order_dates()
         order_status = None
         if ship_date:
             order_status = 'Delivered'
         query = insert(orders_table).values(
-            customer_id=customer_id, order_date=order_date, ship_date=ship_date, order_status=order_status).returning('*')
+            user_id=user_id, order_date=order_date, ship_date=ship_date, order_status=order_status).returning('*')
         try:
             order_id = await database.execute(query)
             await _add_order_items(order_id, product_ids)

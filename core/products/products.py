@@ -18,20 +18,12 @@ router = APIRouter(
 
 
 @router.get("/", status_code=status.HTTP_200_OK, response_model=list[ProductResponse], summary="Get products.", description="Returns a list of products. The products can be filtered and sorted as desired.", response_description="The list of products.")
-async def get_products(product: product_filter = Depends()):
-    '''
-    Parameters:
-    product_category (optional) - allows for filtering by product category.
-    order_by - records can be ordered by column. defaults to product id.
-    order - ascending or descending. defaults to True (ascending).
-    limit - limits the number of records returned. defaults to 10.
-    skip - skips n number of records that would otherwise be returned. allows for pagination.
-    '''
+async def products(product: product_filter = Depends()):
     return product
 
 
 @router.get("/{id}", status_code=status.HTTP_200_OK, response_model=ProductResponse, summary="Gets a product.", description="Gets a product based on its ID.", response_description="The product.")
-async def get_product_by_id(product: product_by_id = Depends()):
+async def product_by_id(product: product_by_id = Depends()):
     return product
 
 

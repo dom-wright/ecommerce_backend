@@ -1,11 +1,10 @@
-from enum import Enum
 from fastapi import APIRouter, status
 from ..db.data_generation import (
-    add_customer,
+    add_user,
     add_products,
     add_order
 )
-from .schemas import TablesModel
+from .enums import TablesModel
 
 router = APIRouter(
     prefix="/admin",
@@ -16,7 +15,7 @@ router = APIRouter(
 @router.post("/create/", status_code=status.HTTP_201_CREATED, response_model=str, summary="Create new records.", description="Create new records for the tables.")
 async def get_products(table: TablesModel, num: int = 0):
     insertion_functions = {
-        TablesModel.customer: add_customer,
+        TablesModel.user: add_user,
         TablesModel.product: add_products,
         TablesModel.order: add_order
     }
