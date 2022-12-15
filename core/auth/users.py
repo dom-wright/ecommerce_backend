@@ -1,6 +1,6 @@
 from fastapi import APIRouter, status, HTTPException
 from ..db.database import database
-from ..auth.schemas import (
+from .schemas import (
     UserResponse
 )
 

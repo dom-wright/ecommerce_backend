@@ -1,18 +1,35 @@
 from datetime import timedelta
-from fastapi import APIRouter, status, HTTPException, Depends
+from fastapi import (
+    APIRouter,
+    BackgroundTasks,
+    status,
+    HTTPException,
+    Depends
+)
 from fastapi.security import OAuth2PasswordRequestForm
-from core import settings
+from .. import settings
+from ..db import database
+from ..dependencies import email_user
 from .schemas import Token, UserResponse
 from .dependencies import (
     authenticate_user,
     get_current_active_user,
-    create_access_token
+    create_access_token,
+    create_user
 )
 
 router = APIRouter(
     prefix="/auth",
-    tags=["Users"]
+    tags=["Auth"]
 )
+
+
+# register user.
+@router.post("/register", status_code=status.HTTP_201_CREATED, response_model=UserResponse)
+async def register_user(background_tasks: BackgroundTasks, user: create_user = Depends()):
+    background_tasks.add_task(
+        email_user, user, message="Welcome to the site!")
+    return user._mapping
 
 
 @router.post("/token", response_model=Token)
@@ -35,3 +52,19 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
 @router.get("/users/me/", response_model=UserResponse)
 async def read_users_me(current_user: UserResponse = Depends(get_current_active_user)):
     return current_user
+
+
+@router.get("/", status_code=status.HTTP_200_OK, response_model=list[UserResponse], summary="Get users", description="Returns a list of users", response_description="The list of users.",)
+async def users(skip: int = 0, limit: int = 10):
+    select_query = f"""SELECT id, username, full_name, email, date_joined, address, county FROM users OFFSET :skip LIMIT :limit;"""
+    users = await database.fetch_all(select_query, {'skip': skip, 'limit': limit})
+    return users
+
+
+@router.get("/{id}", status_code=status.HTTP_200_OK, response_model=UserResponse, summary="Gets a user", description="Gets a user based on their ID.", response_description="The user.")
+async def user_by_id(id: int):
+    query = """SELECT  id, username, full_name, email, date_joined, address, county FROM users WHERE id = :id;"""
+    user = await database.fetch_one(query, {'id': id})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found.")
+    return user

@@ -1,21 +1,21 @@
 from datetime import datetime, timedelta
-from sqlalchemy import select
+from jose import JWTError, jwt
+from sqlalchemy import select, insert, distinct
 from fastapi import status, HTTPException, Depends
 from fastapi.security import OAuth2PasswordBearer
-from jose import JWTError, jwt
-from core import settings
-from ..db.database import (
-    database,
-    users_table as ut
+from .. import settings
+from ..db.database import database, users_table as ut
+from .utils import verify_password, get_password_hash
+from .schemas import UserRegisterRequest, UserResponse, TokenData
+
+
+oauth2_scheme = OAuth2PasswordBearer(
+    tokenUrl='auth/token',
+    description='To test, use username="test_user" and password="password", or register an account through /auth/register/'
 )
-from .utils import verify_password
-from .schemas import UserResponse, TokenData
 
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-
-
-# retrieves the user from the database and returns it.
+# retrieves user from database and returns it.
 async def get_user(username: str):
     select_user_query = select(ut).where(
         ut.c.username == username)
@@ -34,7 +34,7 @@ async def authenticate_user(username: str, password: str):
     return user
 
 
-# creates and returns the JWT token.
+# creates and returns the JWT token (if user successfully authenticates).
 def create_access_token(data: dict, expires_delta: timedelta | None = None):
     to_encode = data.copy()
     if expires_delta:
@@ -70,16 +70,38 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
     return user
 
 
-async def get_current_active_user(current_user: UserResponse = Depends(get_current_user)):
+# calls get_currrent_user first (above), then checks user is active before returning user to view.
+def get_current_active_user(current_user: UserResponse = Depends(get_current_user)):
     if not current_user.is_active:
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
 
 
-async def user_by_id(id: int):
+# gets user by id.
+async def get_user_by_id(id: int):
     query = select(ut).where(ut.c.id == id)
     record = await database.fetch_one(query)
     if not record:
         raise HTTPException(
             status_code=404, detail=f"User with ID = {id} not found.")
     return record
+
+
+async def create_user(user: UserRegisterRequest):
+    user_vals = user.dict()
+    hashed_password = get_password_hash(user_vals["password1"])
+    del user_vals["password1"]
+    del user_vals["password2"]
+    user_vals["hashed_password"] = hashed_password
+    insert_query = insert(ut).values(user_vals).returning('*')
+    user = await database.fetch_one(insert_query)
+    return user
+
+
+async def user_counties():
+    query = select(distinct(ut.c.county)).order_by(ut.c.county)
+    counties = await database.fetch_all(query)
+    if not counties:
+        raise HTTPException(
+            status_code=404, detail=f"No counties found. Check there are users in the database.")
+    return counties

@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 from pydantic import BaseModel, EmailStr, Field, validator
 
@@ -26,7 +27,8 @@ class UserRegisterRequest(UserBase):
 
     @validator('username')
     def username_alphanumeric(cls, v):
-        assert v.isalnum(), 'must be alphanumeric'
+        assert re.match(
+            "^[a-z_]*$", v), 'only lower case letters, numbers and _ allowed.'
         return v
 
     @validator('password2')

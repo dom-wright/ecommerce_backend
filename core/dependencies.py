@@ -3,9 +3,19 @@ from sqlalchemy import (
     update
 )
 from fastapi import HTTPException
-from .db.database import (
-    database
-)
+from .db.database import database
+from .auth.schemas import UserResponse
+
+
+def email_user(user: UserResponse, message=""):
+    # add logic for sending email to user
+    print(f"Message to {user.email}: ", message)
+
+
+def write_log(message: str):
+    with open("log.txt", mode="a") as log:
+        # add the meta to the the received message before entering into the log.
+        log.write(message)
 
 
 async def create_record(table, values):

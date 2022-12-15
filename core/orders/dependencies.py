@@ -17,7 +17,7 @@ from .schemas import (
     OrderItemsResponse
 )
 from .enums import OrderColsModel, OrderStatusModel
-from ..auth.dependencies import user_by_id
+from ..auth.dependencies import get_user_by_id
 from ..products.dependencies import product_by_id
 from ..enums import ColumnOrderModel
 
@@ -65,7 +65,7 @@ async def get_order_by_id_with_items(order_id: int, with_items: bool = False):
 
 
 async def _get_order_with_items(order: OrderResponse):
-    user = await user_by_id(order['user_id'])
+    user = await get_user_by_id(order['user_id'])
     order_items_query = select(oi).where(oi.c.order_id == order["id"])
     order_items = await database.fetch_all(order_items_query)
     order_items_with_products = await _get_items_with_product(order_items)

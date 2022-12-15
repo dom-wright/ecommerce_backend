@@ -13,7 +13,7 @@ from .schemas import (
     OrderWithItemsResponse,
     OrdersByUserResponse
 )
-from ..auth.dependencies import user_by_id
+from ..auth.dependencies import get_user_by_id
 from ..dependencies import update_record
 from .dependencies import (
     get_orders,
@@ -37,7 +37,7 @@ async def orders(orders: get_orders = Depends()):
 
 @router.get("/user/{id}", status_code=status.HTTP_200_OK, response_model=OrdersByUserResponse, summary="Get orders.", description="Returns a list of orders.", response_description="The list of orders.",)
 async def orders_by_user(id: int, orders: get_orders_by_user = Depends()):
-    user = await user_by_id(id)
+    user = await get_user_by_id(id)
     return {"user": user, "orders": orders}
 
 

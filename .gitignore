@@ -1,6 +1,7 @@
 # Project
 .vscode
 data/
+core/static/*
 snippets.py
 dirs.py
 
