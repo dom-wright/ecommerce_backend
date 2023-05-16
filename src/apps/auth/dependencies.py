@@ -1,13 +1,16 @@
 from datetime import datetime, timedelta
-from jose import JWTError, jwt
-from sqlalchemy import select, insert, distinct
-from fastapi import status, HTTPException, Depends
-from fastapi.security import OAuth2PasswordBearer
-from .. import settings
-from ..db.database import database, users_table as ut
-from .utils import verify_password, get_password_hash
-from .schemas import UserRegisterRequest, UserResponse, TokenData
 
+from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
+from jose import JWTError, jwt
+from sqlalchemy import distinct, insert, select
+
+from src import settings
+from src.db.database import database
+from src.db.database import users_table as ut
+
+from .schemas import TokenData, UserRegisterRequest, UserResponse
+from .utils import get_password_hash, verify_password
 
 oauth2_scheme = OAuth2PasswordBearer(
     tokenUrl='auth/token',

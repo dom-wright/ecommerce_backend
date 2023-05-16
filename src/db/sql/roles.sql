@@ -1,0 +1,4 @@
+CREATE USER
+  orders_api_user
+WITH
+  NOSUPERUSER ENCRYPTED PASSWORD 'password';

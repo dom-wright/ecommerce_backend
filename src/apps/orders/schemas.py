@@ -1,5 +1,7 @@
-from datetime import datetime, date
-from pydantic import BaseModel, validator, Field
+from datetime import date, datetime
+
+from pydantic import BaseModel, Field, validator
+
 from ..auth.schemas import UserResponse
 from ..products.schemas import ProductResponse
 from .enums import OrderStatusModel
@@ -11,21 +13,23 @@ class OrderUpdateRequest(BaseModel):
 
     @validator('order_status')
     def order_status_permitted(cls, v, values):
-        if v == 'Delivered' and not values.get("ship_date"):
+        if v == 'Dispatched' and not values.get("ship_date"):
             raise ValueError(
-                "If the order has been delivered, you must submit the date the order was shipped."
+                "If the order has been dispatched, you must submit the date it was dispatched."
             )
-        elif v != 'Delivered' and values.get("ship_date"):
+        elif v == 'Delivered':
+            del values["ship_date"]
+        elif v != 'Dispatched' and values.get("ship_date"):
             raise ValueError(
-                "You may only submit a ship_date if the order has been delivered."
+                "You may only submit a ship_date when the order status is changed to 'dispatched'."
             )
         return v.title()
 
     class Config:
         schema_extra = {
             "example": {
-                "ship_date": "2022-08-30",
-                "order_status": "Delivered"
+                "ship_date": "2022-10-30",
+                "order_status": "Dispatched"
             }
         }
 

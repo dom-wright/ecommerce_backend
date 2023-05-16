@@ -1,5 +1,4 @@
 from uuid import UUID
-from enum import Enum
 from pydantic import BaseModel, Field
 
 
@@ -37,20 +36,3 @@ class ProductResponse(BaseModel):
                 "price": "$119.99"
             }
         }
-
-
-'''enum models'''
-
-
-class ProductColsModel(str, Enum):
-    id = 'id'
-    product_name = "product_name"
-    product_category = "product_category"
-    price = "price"
-
-
-class ProductCategoriesModel(str, Enum):
-    clothing = "Clothing"
-    footwear = "Footwear"
-    headwear = "Headwear"
-    accessories = "Accessories"

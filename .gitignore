@@ -1,10 +1,10 @@
 # Project
 .vscode
 data/
-core/static/*
-snippets.py
+snippets.*
 dirs.py
-
+bootstrap.css
+README.md
 
 # MacOS
 .DS_Store

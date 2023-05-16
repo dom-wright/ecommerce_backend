@@ -1,18 +1,23 @@
+import logging
+
+from fastapi import APIRouter, Body, Depends, status
 from sqlalchemy import delete
-from fastapi import (
-    APIRouter,
-    Depends,
-    status,
-    Body
-)
-from ..db.database import database, products_table as pt
-from .schemas import ProductRequest, ProductResponse
-from ..dependencies import create_record, update_record
+
+from src.db.database import database
+from src.db.database import products_table as pt
+from src.dependencies import create_record, update_record
+
+from ..auth.dependencies import get_current_active_user
 from .dependencies import product_by_id, product_filter
+from .schemas import ProductRequest, ProductResponse
+
+logger = logging.getLogger('orderLogger')
+
 
 router = APIRouter(
     prefix="/products",
     tags=["Products"],
+    dependencies=[Depends(get_current_active_user)],
     responses={404: {"description": "Product not found"}}
 )
 

@@ -7,9 +7,9 @@ from fastapi import (
     Depends
 )
 from fastapi.security import OAuth2PasswordRequestForm
-from .. import settings
-from ..db import database
-from ..dependencies import email_user
+from src import settings
+from src.db import database
+from src.dependencies import email_user
 from .schemas import Token, UserResponse
 from .dependencies import (
     authenticate_user,

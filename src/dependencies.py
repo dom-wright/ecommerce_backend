@@ -1,10 +1,9 @@
-from sqlalchemy import (
-    insert,
-    update
-)
 from fastapi import HTTPException
+from sqlalchemy import insert, update
+
+from src.apps.auth.schemas import UserResponse
+
 from .db.database import database
-from .auth.schemas import UserResponse
 
 
 def email_user(user: UserResponse, message=""):

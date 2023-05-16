@@ -1,26 +1,17 @@
-from fastapi import HTTPException, Query, Depends
-from sqlalchemy import (
-    select,
-    text,
-    insert
-)
-from ..db.database import (
-    database,
-    users_table as ut,
-    orders_table as ot,
-    order_items_table as oi,
-    products_table as pt
-)
-from .schemas import (
-    OrderItemsRequest,
-    OrderResponse,
-    OrderItemsResponse
-)
-from .enums import OrderColsModel, OrderStatusModel
+from fastapi import HTTPException, Query
+from sqlalchemy import insert, select, text
+
+from src.db.database import database
+from src.db.database import order_items_table as oi
+from src.db.database import orders_table as ot
+from src.db.database import products_table as pt
+from src.db.database import users_table as ut
+from src.enums import ColumnOrderModel
+
 from ..auth.dependencies import get_user_by_id
 from ..products.dependencies import product_by_id
-from ..enums import ColumnOrderModel
-
+from .enums import OrderColsModel, OrderStatusModel
+from .schemas import OrderItemsRequest, OrderItemsResponse, OrderResponse
 
 '''GET'''
 

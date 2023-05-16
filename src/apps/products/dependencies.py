@@ -1,17 +1,13 @@
+import logging
+
 from fastapi import HTTPException
-from sqlalchemy import (
-    select,
-    text
-)
-from ..db.database import (
-    database,
-    products_table as pt
-)
-from .schemas import (
-    ProductCategoriesModel,
-    ProductColsModel
-)
-from ..enums import ColumnOrderModel
+from sqlalchemy import select, text
+
+from src.db.database import database
+from src.db.database import products_table as pt
+from src.enums import ColumnOrderModel
+
+from .enums import ProductCategoriesModel, ProductColsModel
 
 
 async def product_by_id(id: int):

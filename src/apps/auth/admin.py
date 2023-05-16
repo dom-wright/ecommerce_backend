@@ -1,5 +1,5 @@
 from fastapi import APIRouter, status
-from ..db.data_generation import (
+from src.db.data_generation import (
     add_user,
     add_products,
     add_order

@@ -1,17 +1,15 @@
-from pathlib import Path
-from datetime import datetime, timedelta
 import random
+from datetime import datetime, timedelta
+from pathlib import Path
+
 from faker import Faker
 from fastapi import HTTPException
-from sqlalchemy import select, insert
-from ..auth.utils import get_password_hash
-from .database import (
-    database,
-    users_table,
-    products_table,
-    orders_table,
-    order_items_table
-)
+from sqlalchemy import insert, select
+
+from src.apps.auth.utils import get_password_hash
+
+from .database import (database, order_items_table, orders_table,
+                       products_table, users_table)
 
 counties = [
     'Greater London', 'Strathclyde', 'West Lothian', 'North Yorkshire', 'Surrey',
@@ -61,7 +59,7 @@ async def add_products(n):
         raise HTTPException(
             status_code=400, detail="Data insertion unsuccessful. Products table already contains products. Clear the table first and rerun import.")
     cwd = Path(__file__).parent
-    query = f"""COPY products (product_name, product_category, price) FROM '{cwd}/products.csv' DELIMITER ',' CSV HEADER"""
+    query = f"""COPY products (product_name, product_category, price) FROM '{cwd}/data/products.csv' DELIMITER ',' CSV HEADER"""
     try:
         await database.execute(query)
     except Exception as e:
