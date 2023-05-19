@@ -17,7 +17,6 @@ router = APIRouter(
 
 @router.get("/", status_code=status.HTTP_200_OK, response_model=list[UserResponse], summary="Get users", description="Returns a list of users", response_description="The list of users.",)
 async def users(skip: int = 0, limit: int = 10):
-    logger.info('This message')
     select_query = f"""SELECT id, username, full_name, email, date_joined, address, county FROM users OFFSET :skip LIMIT :limit;"""
     users = await database.fetch_all(select_query, {'skip': skip, 'limit': limit})
     return users

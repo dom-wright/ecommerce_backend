@@ -20,4 +20,4 @@ async def get_products(table: TablesModel, num: int = 0):
         TablesModel.order: add_order
     }
     await insertion_functions[table](num)
-    return f'{num} insertions made.'
+    return f'Data inserted.'
