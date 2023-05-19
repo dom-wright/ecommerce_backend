@@ -14,9 +14,9 @@ from fastapi.templating import Jinja2Templates
 from src.apps.auth import admin, auth, users
 from src.apps.orders import orders
 from src.apps.products import products
+from src.db.database import database
 
 from . import settings
-from .db.database import database
 
 app = FastAPI(
     title="Ecommerce Backend Application",
@@ -44,6 +44,7 @@ app.add_middleware(
 )
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
+
 templates = Jinja2Templates(directory="templates")
 
 logger = logging.getLogger('orderLogger')

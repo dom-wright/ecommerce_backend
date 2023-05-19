@@ -1,18 +1,18 @@
 import os
 import sys
 
+
 # you can use the command 'openssl rand -hex 32' in the terminal to create a random secret key.
 SECRET_KEY = os.environ.get("SECRET_KEY")
+
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
+# database
+DB_NAME = "orders_api_db"
 
 # middleware
-origins = [
-    "http://127.0.0.1:8000",
-    "http://localhost:8000",
-    "http://localhost"
-]
+origins = ['*']
 
 
 # logging configurations

@@ -3,7 +3,7 @@ from sqlalchemy import insert, update
 
 from src.apps.auth.schemas import UserResponse
 
-from .db.database import database
+from src.db.database import database
 
 
 def email_user(user: UserResponse, message=""):

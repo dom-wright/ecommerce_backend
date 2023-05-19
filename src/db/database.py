@@ -1,3 +1,5 @@
+from src import settings
+
 from databases import Database
 from sqlalchemy import (
     ForeignKey,
@@ -12,9 +14,8 @@ from sqlalchemy import (
     Boolean
 )
 
-
 # DATABASES
-DATABASE_URL = 'postgresql+asyncpg://localhost:5432/my_orders_db'
+DATABASE_URL = f'postgresql+asyncpg://localhost:5432/{settings.DB_NAME}'
 database = Database(DATABASE_URL)
 
 metadata = MetaData()

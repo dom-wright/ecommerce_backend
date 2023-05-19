@@ -59,7 +59,7 @@ async def add_products(n):
         raise HTTPException(
             status_code=400, detail="Data insertion unsuccessful. Products table already contains products. Clear the table first and rerun import.")
     cwd = Path(__file__).parent
-    query = f"""COPY products (product_name, product_category, price) FROM '{cwd}/data/products.csv' DELIMITER ',' CSV HEADER"""
+    query = f"""COPY products (product_name, product_category, price) FROM '{cwd}/products.csv' DELIMITER ',' CSV HEADER"""
     try:
         await database.execute(query)
     except Exception as e:

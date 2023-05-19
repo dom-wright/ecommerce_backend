@@ -5,7 +5,7 @@ from src.db.database import database
 from src.db.database import orders_table as ot
 from src.dependencies import update_record
 
-from ..auth.dependencies import get_user_by_id
+from ..auth.dependencies import get_user_by_id, get_current_active_user
 from .dependencies import (create_new_order, get_order_by_id,
                            get_order_by_id_with_items, get_orders,
                            get_orders_by_user)
@@ -15,6 +15,7 @@ from .schemas import (OrderItemsRequest, OrderResponse, OrdersByUserResponse,
 router = APIRouter(
     prefix="/orders",
     tags=["Orders"],
+    dependencies=[Depends(get_current_active_user)],
     responses={404: {"description": "Order not found"}}
 )
 
